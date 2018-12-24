@@ -2,6 +2,7 @@ from flask import Flask, g
 from flask_cors import CORS
 from helpers.config import Config
 from helpers.db_helper import connect_db
+from routes.file_upload_routes import file_upload
 
 app = Flask(__name__)
 
@@ -23,6 +24,7 @@ def teardown_request(exception):
         g.db.close()
 
 # register blueprint for file_upload and task_runner endpoints
+app.register_blueprint(file_upload)
 
 # bootstraping the app
 if __name__ == "__main__":
