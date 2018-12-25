@@ -4,6 +4,7 @@ from helpers.sheet_helper import file_to_records
 import time
 from app import create_app
 from pymongo.errors import DuplicateKeyError
+import os
 
 @celery.task(bind=True)
 def insert_documents(self, filename):
@@ -21,4 +22,7 @@ def insert_documents(self, filename):
       ignoredRecords += 1
     meta = { 'totalRecords': totalRecords, 'processedRecords': processedRecords, 'ignoredRecords': ignoredRecords, 'jobs_added': jobs_added }
     self.update_state(state='Progress', meta=meta)
+    time.sleep(10)
+  filePath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+  os.remove(filePath)
   return { 'totalRecords': totalRecords, 'processedRecords': processedRecords, 'ignoredRecords': ignoredRecords, 'jobs_added': jobs_added , 'status': 'Upload Completed'}
