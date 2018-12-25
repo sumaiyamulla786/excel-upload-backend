@@ -1,16 +1,9 @@
-from flask import Flask, g
-from flask_cors import CORS
-from helpers.config import Config
+from flask import g
 from helpers.db_helper import connect_db
 from routes.file_upload_routes import file_upload
+from app import create_app
 
-app = Flask(__name__)
-
-#enable cors for local development
-CORS(app)
-
-#setting the config for app
-app.config.from_object(Config)
+app = create_app()
 
 # setting mongo client and redis client on request context using two connector functions
 @app.before_request

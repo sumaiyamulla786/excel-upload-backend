@@ -1,16 +1,18 @@
-from flask import request, Blueprint, jsonify
+from flask import request, Blueprint, jsonify, current_app
 import pyexcel as pe
-from helpers.db_helper import insert_record
+from helpers.celery_helper import insert_documents
+from pymongo.errors import DuplicateKeyError
+from werkzeug.utils import secure_filename
+import os
 
 file_upload = Blueprint('file_upload', __name__)
 
 @file_upload.route('/upload', methods=['POST'])
 def upload():
-    filename = request.files['excel'].filename
+    excelFile = request.files['excel']
+    filename = excelFile.filename
+    filename = secure_filename(filename)
     extension = filename.split('.')[-1]
-    content = request.files['excel'].read()
-    sheet = pe.get_sheet(file_type=extension, file_content=content, name_columns_by_row=0)
-    records = sheet.to_records()
-    for record in records:
-        insert_record(record)
-    return jsonify({"result": sheet.dict})
+    excelFile.save(os.path.join(current_app.config['UPLOAD_FOLDER'], filename))
+    task = insert_documents.delay(filename)
+    return jsonify({ 'task': task.id })
